@@ -1,1 +1,4 @@
 @import "tailwindcss";
+
+/* Makes Tailwind's dark: classes activate when a parent has className="dark" */
+@custom-variant dark (&:where(.dark, .dark *));
