@@ -1,4 +1,7 @@
 import { useEffect, useState } from "react";
+import BookCard from "./components/BookCard";
+import LibraryControls from "./components/LibraryControls";
+import SearchPanel from "./components/SearchPanel";
 import StatsBar from "./components/StatsBar";
 import type {
   Book,
@@ -284,135 +287,27 @@ function App() {
           </button>
         </header>
 
-        <section className="mt-6 rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-          <h2 className="text-xl font-semibold">Search Open Library</h2>
+        <SearchPanel
+          bookQuery={bookQuery}
+          searchResults={searchResults}
+          isLoading={isLoading}
+          error={error}
+          message={message}
+          onBookQueryChange={setBookQuery}
+          onSearch={searchOpenLibrary}
+          onAddBookToLibrary={addBookToLibrary}
+        />
 
-          <form
-            className="mt-2 flex flex-col gap-2 sm:flex-row"
-            onSubmit={(event) => {
-              event.preventDefault();
-              void searchOpenLibrary();
-            }}
-          >
-            <input
-              id="book-query"
-              type="text"
-              value={bookQuery}
-              onChange={(event) => setBookQuery(event.target.value)}
-              placeholder="Search for books to add"
-              className="w-full rounded border border-slate-300 bg-white px-3 py-2 text-slate-900 placeholder:text-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
-            />
-
-            <button
-              type="submit"
-              className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-            >
-              Search
-            </button>
-          </form>
-
-          {isLoading && <p className="mt-3 text-slate-500 dark:text-slate-400">Searching...</p>}
-          {error && <p className="mt-3 text-red-600 dark:text-red-400">{error}</p>}
-          {message && <p className="mt-3 text-slate-600 dark:text-slate-300">{message}</p>}
-
-          {searchResults.length > 0 && (
-            <div className="mt-4 grid gap-3">
-              {searchResults.map((book) => (
-                <article
-                  key={book.id}
-                  className="flex gap-4 rounded border border-slate-200 bg-slate-50 p-3 shadow-sm dark:border-slate-800 dark:bg-slate-950"
-                >
-                  {book.coverUrl ? (
-                    <img
-                      src={book.coverUrl}
-                      alt={`Cover of ${book.title}`}
-                      className="h-28 w-20 rounded object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-28 w-20 items-center justify-center rounded bg-slate-200 text-center text-xs text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                      No cover
-                    </div>
-                  )}
-
-                  <div className="flex-1">
-                    <h3 className="font-bold">{book.title}</h3>
-                    <p className="text-slate-600 dark:text-slate-300">by {book.author}</p>
-                    {book.year && <p className="text-sm">First published: {book.year}</p>}
-
-                    <button
-                      onClick={() => addBookToLibrary(book)}
-                      className="mt-3 rounded bg-green-600 px-3 py-1 text-white hover:bg-green-700"
-                    >
-                      Add to Library
-                    </button>
-                  </div>
-                </article>
-              ))}
-            </div>
-          )}
-        </section>
-
-        <section className="mt-6 rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-          <label htmlFor="library-search" className="block text-xl font-semibold">
-            Search My Library
-          </label>
-
-          <input
-            id="library-search"
-            type="text"
-            value={librarySearch}
-            onChange={(event) => setLibrarySearch(event.target.value)}
-            placeholder="Search your library by title or author"
-            className="mt-2 w-full rounded border border-slate-300 bg-white px-3 py-2 text-slate-900 placeholder:text-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
-          />
-
-          {/*
-            These controls are the assignment's required library filter/sort UI.
-            Changing them updates state, which recalculates visibleLibrary above.
-          */}
-          <div className="mt-4 grid gap-3 md:grid-cols-3">
-            <label className="block">
-              <span className="font-semibold">Filter status</span>
-              <select
-                value={statusFilter}
-                onChange={(event) => setStatusFilter(event.target.value as StatusFilter)}
-                className="mt-1 w-full rounded border border-slate-300 bg-white px-3 py-2 text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
-              >
-                <option value="all">All</option>
-                <option value="to-read">To Read</option>
-                <option value="reading">Reading</option>
-                <option value="finished">Finished</option>
-              </select>
-            </label>
-
-            <label className="block">
-              <span className="font-semibold">Sort by</span>
-              <select
-                value={sortBy}
-                onChange={(event) => setSortBy(event.target.value as SortBy)}
-                className="mt-1 w-full rounded border border-slate-300 bg-white px-3 py-2 text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
-              >
-                <option value="dateAdded">Date added</option>
-                <option value="title">Title</option>
-                <option value="author">Author</option>
-              </select>
-            </label>
-
-            <label className="block">
-              <span className="font-semibold">Direction</span>
-              <select
-                value={sortDirection}
-                onChange={(event) =>
-                  setSortDirection(event.target.value as SortDirection)
-                }
-                className="mt-1 w-full rounded border border-slate-300 bg-white px-3 py-2 text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
-              >
-                <option value="asc">Ascending</option>
-                <option value="desc">Descending</option>
-              </select>
-            </label>
-          </div>
-        </section>
+        <LibraryControls
+          librarySearch={librarySearch}
+          statusFilter={statusFilter}
+          sortBy={sortBy}
+          sortDirection={sortDirection}
+          onLibrarySearchChange={setLibrarySearch}
+          onStatusFilterChange={setStatusFilter}
+          onSortByChange={setSortBy}
+          onSortDirectionChange={setSortDirection}
+        />
 
         <StatsBar
           toReadCount={toReadCount}
@@ -427,74 +322,20 @@ function App() {
           {library.length === 0 ? (
             <p className="mt-4 text-slate-500 dark:text-slate-400">No books yet.</p>
           ) : visibleLibrary.length === 0 ? (
-            <p className="mt-4 text-slate-500 dark:text-slate-400">No books match your current filters.</p>
+            <p className="mt-4 text-slate-500 dark:text-slate-400">
+              No books match your current filters.
+            </p>
           ) : (
             <div className="mt-4 grid gap-4">
               {visibleLibrary.map((book) => (
-                <article
+                <BookCard
                   key={book.id}
-                  className="flex gap-4 rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900"
-                >
-                  {book.coverUrl ? (
-                    <img
-                      src={book.coverUrl}
-                      alt={`Cover of ${book.title}`}
-                      className="h-32 w-24 rounded object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-32 w-24 items-center justify-center rounded bg-slate-200 text-center text-xs text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                      No cover
-                    </div>
-                  )}
-
-                  <div className="flex-1">
-                    <h3 className="text-xl font-bold">{book.title}</h3>
-                    <p className="text-slate-600 dark:text-slate-300">by {book.author}</p>
-                    {book.year && <p className="text-sm">First published: {book.year}</p>}
-
-                    <p className="mt-2">
-                      Status: <strong>{book.status}</strong>
-                    </p>
-
-                    {book.status === "finished" && (
-                      <div className="mt-3">
-                        <p>Rating:</p>
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <button
-                            key={star}
-                            onClick={() => rateBook(book.id, star)}
-                            className="mr-1 text-xl text-yellow-500"
-                          >
-                            {book.rating && book.rating >= star ? "★" : "☆"}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      <button
-                        onClick={() => moveBack(book.id)}
-                        className="rounded bg-slate-200 px-3 py-1 text-slate-900 hover:bg-slate-300 dark:bg-slate-700 dark:text-slate-100 dark:hover:bg-slate-600"
-                      >
-                        Back
-                      </button>
-
-                      <button
-                        onClick={() => moveForward(book.id)}
-                        className="rounded bg-blue-600 px-3 py-1 text-white hover:bg-blue-700"
-                      >
-                        Forward
-                      </button>
-
-                      <button
-                        onClick={() => deleteBook(book.id)}
-                        className="rounded bg-red-600 px-3 py-1 text-white hover:bg-red-700"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                </article>
+                  book={book}
+                  onMoveBack={moveBack}
+                  onMoveForward={moveForward}
+                  onDeleteBook={deleteBook}
+                  onRateBook={rateBook}
+                />
               ))}
             </div>
           )}
