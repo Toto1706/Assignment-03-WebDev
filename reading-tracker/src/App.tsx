@@ -1,7 +1,14 @@
 import { useState } from "react";
 
 // Union for status of book
+// This limits book.status so it can only be one of these three strings.
 type Status = "to-read" | "reading" | "finished";
+
+// These types are for the filter/sort controls.
+// StatusFilter includes "all" because the user can choose to show every book.
+type StatusFilter = "all" | Status;
+type SortBy = "title" | "author" | "dateAdded";
+type SortDirection = "asc" | "desc";
 
 // Book datatype
 type Book = {
@@ -15,6 +22,7 @@ type Book = {
   coverUrl?: string;
 };
 
+// Shape of one book result from the Open Library API.
 type OpenLibraryDoc = {
   key: string;
   title?: string;
@@ -23,6 +31,7 @@ type OpenLibraryDoc = {
   cover_i?: number;
 };
 
+// Shape of the full response from Open Library.
 type OpenLibraryResponse = {
   docs: OpenLibraryDoc[];
 };
@@ -52,15 +61,50 @@ function App() {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
 
-  // Filters existing library based on the library search input
-  const filteredLibrary = library.filter((book) => {
-    const query = librarySearch.toLowerCase().trim();
+  // State for the library controls.
+  // These do not change the actual library array; they only affect what is displayed.
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [sortBy, setSortBy] = useState<SortBy>("dateAdded");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
 
-    return (
-      book.title.toLowerCase().includes(query) ||
-      book.author.toLowerCase().includes(query)
-    );
-  });
+  // This is DERIVED DATA.
+  // We do not store visibleLibrary in useState because it can be recalculated
+  // from the current library, search text, status filter, and sort settings.
+  const visibleLibrary = library
+    // 1. Text search: only keep books whose title or author matches the search box.
+    .filter((book) => {
+      const query = librarySearch.toLowerCase().trim();
+
+      return (
+        book.title.toLowerCase().includes(query) ||
+        book.author.toLowerCase().includes(query)
+      );
+    })
+    // 2. Status filter: if statusFilter is "all", keep everything.
+    // Otherwise, keep only books with the selected status.
+    .filter((book) => {
+      return statusFilter === "all" || book.status === statusFilter;
+    })
+    // 3. Sorting: arrange the filtered books based on the user's sort controls.
+    .sort((a, b) => {
+      let comparison = 0;
+
+      if (sortBy === "title") {
+        comparison = a.title.localeCompare(b.title);
+      }
+
+      if (sortBy === "author") {
+        comparison = a.author.localeCompare(b.author);
+      }
+
+      if (sortBy === "dateAdded") {
+        comparison = a.dateAdded - b.dateAdded;
+      }
+
+      // If direction is ascending, use comparison normally.
+      // If direction is descending, flip the sign.
+      return sortDirection === "asc" ? comparison : -comparison;
+    });
 
   // Calls Open Library API and stores the results in searchResults
   async function searchOpenLibrary() {
@@ -287,6 +331,53 @@ function App() {
           placeholder="Search your library by title or author"
           className="mt-2 w-full rounded border px-3 py-2"
         />
+
+        {/*
+          These controls are the assignment's required library filter/sort UI.
+          Changing them updates state, which recalculates visibleLibrary above.
+        */}
+        <div className="mt-4 grid gap-3 md:grid-cols-3">
+          <label className="block">
+            <span className="font-semibold">Filter status</span>
+            <select
+              value={statusFilter}
+              onChange={(event) => setStatusFilter(event.target.value as StatusFilter)}
+              className="mt-1 w-full rounded border px-3 py-2"
+            >
+              <option value="all">All</option>
+              <option value="to-read">To Read</option>
+              <option value="reading">Reading</option>
+              <option value="finished">Finished</option>
+            </select>
+          </label>
+
+          <label className="block">
+            <span className="font-semibold">Sort by</span>
+            <select
+              value={sortBy}
+              onChange={(event) => setSortBy(event.target.value as SortBy)}
+              className="mt-1 w-full rounded border px-3 py-2"
+            >
+              <option value="dateAdded">Date added</option>
+              <option value="title">Title</option>
+              <option value="author">Author</option>
+            </select>
+          </label>
+
+          <label className="block">
+            <span className="font-semibold">Direction</span>
+            <select
+              value={sortDirection}
+              onChange={(event) =>
+                setSortDirection(event.target.value as SortDirection)
+              }
+              className="mt-1 w-full rounded border px-3 py-2"
+            >
+              <option value="asc">Ascending</option>
+              <option value="desc">Descending</option>
+            </select>
+          </label>
+        </div>
       </section>
 
       <section className="mt-6 rounded-lg border p-4">
@@ -302,11 +393,11 @@ function App() {
 
         {library.length === 0 ? (
           <p className="mt-4 text-gray-500">No books yet.</p>
-        ) : filteredLibrary.length === 0 ? (
-          <p className="mt-4 text-gray-500">No books match your search.</p>
+        ) : visibleLibrary.length === 0 ? (
+          <p className="mt-4 text-gray-500">No books match your current filters.</p>
         ) : (
           <div className="mt-4 grid gap-4">
-            {filteredLibrary.map((book) => (
+            {visibleLibrary.map((book) => (
               <article
                 key={book.id}
                 className="flex gap-4 rounded-lg border p-4 shadow-sm"
