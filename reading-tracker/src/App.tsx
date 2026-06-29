@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 // Union for status of book
 // This limits book.status so it can only be one of these three strings.
@@ -48,8 +48,25 @@ const starterBooks: Book[] = [
 ];
 
 function App() {
-  // Books currently in user's library
-  const [library, setLibrary] = useState<Book[]>(starterBooks);
+  // Books currently in the user's library.
+  // The function form of useState runs only once when the app first loads.
+  // First, we try to load the saved library from localStorage.
+  // If there is nothing saved yet, we fall back to starterBooks.
+  const [library, setLibrary] = useState<Book[]>(() => {
+    const savedLibrary = localStorage.getItem("reading-tracker-library");
+
+    if (!savedLibrary) {
+      return starterBooks;
+    }
+
+    try {
+      return JSON.parse(savedLibrary) as Book[];
+    } catch {
+      // If the saved data is broken for some reason, do not crash the app.
+      // Just restart with the starter books.
+      return starterBooks;
+    }
+  });
 
   // Search/filter text for books already in library
   const [librarySearch, setLibrarySearch] = useState("");
@@ -66,6 +83,13 @@ function App() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [sortBy, setSortBy] = useState<SortBy>("dateAdded");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
+
+  // This is a side effect: saving data outside of React.
+  // Every time the library changes, this writes the latest library to localStorage.
+  // That is what makes the user's books survive a browser refresh.
+  useEffect(() => {
+    localStorage.setItem("reading-tracker-library", JSON.stringify(library));
+  }, [library]);
 
   // This is DERIVED DATA.
   // We do not store visibleLibrary in useState because it can be recalculated
