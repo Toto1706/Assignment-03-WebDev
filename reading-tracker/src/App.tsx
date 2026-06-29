@@ -1,40 +1,12 @@
 import { useEffect, useState } from "react";
-
-// Union for status of book
-// This limits book.status so it can only be one of these three strings.
-type Status = "to-read" | "reading" | "finished";
-
-// These types are for the filter/sort controls.
-// StatusFilter includes "all" because the user can choose to show every book.
-type StatusFilter = "all" | Status;
-type SortBy = "title" | "author" | "dateAdded";
-type SortDirection = "asc" | "desc";
-
-// Book datatype
-type Book = {
-  id: string;
-  title: string;
-  author: string;
-  status: Status;
-  rating?: number;
-  dateAdded: number;
-  year?: number;
-  coverUrl?: string;
-};
-
-// Shape of one book result from the Open Library API.
-type OpenLibraryDoc = {
-  key: string;
-  title?: string;
-  author_name?: string[];
-  first_publish_year?: number;
-  cover_i?: number;
-};
-
-// Shape of the full response from Open Library.
-type OpenLibraryResponse = {
-  docs: OpenLibraryDoc[];
-};
+import StatsBar from "./components/StatsBar";
+import type {
+  Book,
+  OpenLibraryResponse,
+  SortBy,
+  SortDirection,
+  StatusFilter,
+} from "./types";
 
 // Sample array when starting app
 const starterBooks: Book[] = [
@@ -442,13 +414,12 @@ function App() {
           </div>
         </section>
 
-        <section className="mt-6 rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-          <h2 className="text-xl font-semibold">Stats</h2>
-          <p className="mt-2">
-            {toReadCount} to read · {readingCount} reading · {finishedCount} finished
-          </p>
-          <p className="mt-1">Average finished-book rating: {averageRating}</p>
-        </section>
+        <StatsBar
+          toReadCount={toReadCount}
+          readingCount={readingCount}
+          finishedCount={finishedCount}
+          averageRating={averageRating}
+        />
 
         <section className="mt-6">
           <h2 className="text-2xl font-semibold">My Library</h2>
