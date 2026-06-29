@@ -30,6 +30,19 @@ function App() {
   // Hook that initializes an array that holds Book datatype, initialized from starterBooks array
   const [library, setLibrary] = useState<Book[]>(starterBooks);
 
+  // Hook that intializes an empty string for searching books in library 
+  const [search, setSearch] = useState("");
+
+  //Search logic
+  const filteredLibrary = library.filter((book) => {
+    const query = search.toLowerCase();
+
+    return (
+      book.title.toLowerCase().includes(query) ||
+      book.author.toLowerCase().includes(query)
+    );
+  });
+
   // Maniputlates the status of the book where Forward button has been clicked, loops through the 
   // library to find the proper book to modify
   function moveForward(id: string) {
@@ -96,6 +109,20 @@ function App() {
       <h1 className="text-4xl font-bold">Reading Tracker</h1>
 
       <section className="mt-6 rounded-lg border p-4">
+        <label htmlFor="search" className="block text-xl font-semibold">
+          Search Books
+        </label>
+        <input
+          id="search"
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search by title or author"
+          className="mt-2 w-full rounded border px-3 py-2"
+        />
+      </section>
+
+      <section className="mt-6 rounded-lg border p-4">
         <h2 className="text-xl font-semibold">Stats</h2>
         <p className="mt-2">
           {toReadCount} to read · {readingCount} reading · {finishedCount} finished
@@ -105,11 +132,12 @@ function App() {
       <section className="mt-6">
         <h2 className="text-2xl font-semibold">My Library</h2>
 
-        {library.length === 0 ? (
+        {/* Conditional render of user entered search*/}
+        {filteredLibrary.length === 0 ? (
           <p className="mt-4 text-gray-500">No books yet.</p>
         ) : (
           <div className="mt-4 grid gap-4">
-            {library.map((book) => (
+            {filteredLibrary.map((book) => (
               <article key={book.id} className="rounded-lg border p-4 shadow-sm">
                 <h3 className="text-xl font-bold">{book.title}</h3>
                 <p className="text-gray-600">by {book.author}</p>
